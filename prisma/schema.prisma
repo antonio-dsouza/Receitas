@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model group {
+  id                   Int                    @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  name                 String                 @db.VarChar(64)
+  description          String                 @db.VarChar(256)
+  group_has_permission group_has_permission[]
+  user                 user[]
+}
+
+model group_has_permission {
+  group_id      Int
+  permission_id Int
+  group         group      @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_group_has_permission_group1")
+  permission    permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_group_has_permission_permission1")
+
+  @@id([group_id, permission_id])
+  @@index([group_id], map: "fk_group_has_permission_group1_idx")
+  @@index([permission_id], map: "fk_group_has_permission_permission1_idx")
+}
+
+model permission {
+  id                   Int                    @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  name                 String                 @db.VarChar(64)
+  description          String                 @db.VarChar(256)
+  group_has_permission group_has_permission[]
+}
+
+model user {
+  id         Int          @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  group_id   Int?         @default(1)
+  name       String       @db.VarChar(64)
+  email      String       @db.VarChar(128)
+  password   String       @db.VarChar(64)
+  admin      Boolean?     @default(false)
+  avatar_url String?      @db.VarChar(256)
+  avaliation avaliation[]
+  favorite   favorite[]
+  recipe     recipe[]
+  group      group?       @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_group1")
+  user_token user_token[]
+
+  @@index([group_id], map: "fk_user_group1_idx")
+}
+
+model avaliation {
+  id        Int     @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  coment    String  @db.Text
+  stars     Boolean
+  user_id   Int
+  recipe_id Int
+  recipe    recipe  @relation(fields: [recipe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_avaliation_recipe1")
+  user      user    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_avaliation_user1")
+
+  @@index([recipe_id], map: "fk_avaliation_recipe1_idx")
+  @@index([user_id], map: "fk_avaliation_user1_idx")
+}
+
+model category {
+  id                  Int                   @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  title               String                @db.VarChar(128)
+  description         String                @db.Text
+  file                file[]
+  recipe_has_category recipe_has_category[]
+}
+
+model favorite {
+  id        Int    @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  user_id   Int
+  recipe_id Int
+  recipe    recipe @relation(fields: [recipe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_favorite_recipe1")
+  user      user   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_favorite_user1")
+
+  @@index([recipe_id], map: "fk_favorite_recipe1_idx")
+  @@index([user_id], map: "fk_favorite_user1_idx")
+}
+
+model file {
+  id          Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  file_path   String    @db.Text
+  type        String    @db.VarChar(64)
+  recipe_id   Int?
+  category_id Int?
+  category    category? @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_file_category1")
+  recipe      recipe?   @relation(fields: [recipe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_file_recipe1")
+
+  @@index([recipe_id], map: "fk_file_recipe1_idx")
+  @@index([category_id], map: "fk_file_category1_idx")
+}
+
+model recipe {
+  id                    Int                   @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  title                 String                @db.VarChar(80)
+  description           String                @db.VarChar(45)
+  ingredients           String                @db.LongText
+  video                 String                @db.VarChar(256)
+  portion               Decimal?              @db.Decimal(2, 0)
+  preparation           String?               @db.LongText
+  adicional_information String?               @db.LongText
+  cooking_hours         Decimal?              @db.Decimal(2, 0)
+  user_id               Int
+  avaliation            avaliation[]
+  favorite              favorite[]
+  file                  file[]
+  user                  user                  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_recipe_user")
+  recipe_has_category   recipe_has_category[]
+
+  @@index([user_id], map: "fk_recipe_user_idx")
+}
+
+model recipe_has_category {
+  recipe_id   Int
+  category_id Int
+  category    category @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_recipe_has_category_category1")
+  recipe      recipe   @relation(fields: [recipe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_recipe_has_category_recipe1")
+
+  @@id([recipe_id, category_id])
+  @@index([category_id], map: "fk_recipe_has_category_category1_idx")
+  @@index([recipe_id], map: "fk_recipe_has_category_recipe1_idx")
+}
+
+model user_token {
+  id            Int      @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  refresh_token String   @db.LongText
+  expires_date  DateTime @db.Timestamp(0)
+  created_at    DateTime @default(now()) @db.Timestamp(0)
+  user_id       Int
+  user          user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_token_user1")
+
+  @@index([user_id], map: "fk_user_token_user1_idx")
+}
