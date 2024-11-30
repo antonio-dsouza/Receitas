@@ -1,6 +1,4 @@
-import {
-  IRecipesRepository,
-} from "../../../repositories/IRecipesRepository";
+import { IRecipesRepository } from "../../../repositories/IRecipesRepository";
 import { Recipe } from "../entities/Recipe";
 import prismaClient from "@shared/infra/prisma";
 import { ICreateRecipeDTO } from "@modules/recipe/dtos/ICreateRecipeDTO";
@@ -12,7 +10,7 @@ class RecipesRepository implements IRecipesRepository {
       where: {
         recipe_has_category: {
           some: {
-            category_id: Number(category_id)
+            category_id: Number(category_id),
           },
         },
       },
@@ -26,8 +24,8 @@ class RecipesRepository implements IRecipesRepository {
         user: {
           select: {
             name: true,
-          }
-        }
+          },
+        },
       },
     });
 
@@ -37,8 +35,7 @@ class RecipesRepository implements IRecipesRepository {
   async findAllRecipes(): Promise<Recipe[]> {
     const recipes = prismaClient.recipe.findMany({
       include: {
-        file: {
-        },
+        file: {},
         recipe_has_category: {
           include: {
             category: true,
@@ -47,8 +44,8 @@ class RecipesRepository implements IRecipesRepository {
         user: {
           select: {
             name: true,
-          }
-        }
+          },
+        },
       },
     });
 
@@ -61,8 +58,7 @@ class RecipesRepository implements IRecipesRepository {
         id: id,
       },
       include: {
-        file: {
-        },
+        file: {},
         recipe_has_category: {
           include: {
             category: true,
@@ -71,14 +67,26 @@ class RecipesRepository implements IRecipesRepository {
         user: {
           select: {
             name: true,
-          }
-        }
+          },
+        },
       },
     });
     return recipe;
   }
 
-  async save({ user_id, title, description, ingredients, portion, preparation, adicional_information, cooking_hours, files, video, categories }: ICreateRecipeDTO): Promise<Recipe> {
+  async save({
+    user_id,
+    title,
+    description,
+    ingredients,
+    portion,
+    preparation,
+    adicional_information,
+    cooking_hours,
+    files,
+    video,
+    categories,
+  }: ICreateRecipeDTO): Promise<Recipe> {
     const recipe = await prismaClient.recipe.create({
       data: {
         user_id,
@@ -98,7 +106,7 @@ class RecipesRepository implements IRecipesRepository {
         },
         recipe_has_category: {
           create: categories.map((category) => ({
-            category_id: category
+            category_id: category,
           })),
         },
       },
@@ -109,7 +117,17 @@ class RecipesRepository implements IRecipesRepository {
     return recipe;
   }
 
-  async updateRecipe({ id, user_id, title, description, ingredients, portion, preparation, adicional_information, cooking_hours }: IUpdateRecipeDTO): Promise<void> {
+  async updateRecipe({
+    id,
+    user_id,
+    title,
+    description,
+    ingredients,
+    portion,
+    preparation,
+    adicional_information,
+    cooking_hours,
+  }: IUpdateRecipeDTO): Promise<void> {
     await prismaClient.recipe.update({
       data: {
         user_id,

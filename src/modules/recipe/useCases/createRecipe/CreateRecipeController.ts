@@ -18,16 +18,25 @@ interface MulterFile {
 
 class CreateRecipeController {
   async handle(request: Request, response: Response): Promise<Response> {
-    const { title, description, ingredients, portion, preparation, adicional_information, cooking_hours, video } = request.body;
+    const {
+      title,
+      description,
+      ingredients,
+      portion,
+      preparation,
+      adicional_information,
+      cooking_hours,
+      video,
+    } = request.body;
     const user_id = request.userAuthenticated;
     let categories = [1];
 
     const files = request.files
-    ? (request.files as MulterFile[]).map((file) => ({
-        file_path: basename(file.path),
-        type: file.mimetype.startsWith('video/') ? 'video' : 'image',
-      }))
-    : null;
+      ? (request.files as MulterFile[]).map((file) => ({
+          file_path: basename(file.path),
+          type: file.mimetype.startsWith("video/") ? "video" : "image",
+        }))
+      : null;
 
     // if (!title || !description || !ingredients || !portion || !preparation || !cooking_hours || !files || !video) {
     //   throw new AppError("Invalid params!");
@@ -46,7 +55,7 @@ class CreateRecipeController {
       files,
       user_id,
       video,
-      categories: categories
+      categories: categories,
     });
 
     return response.json(result);

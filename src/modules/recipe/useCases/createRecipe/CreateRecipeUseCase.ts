@@ -18,8 +18,8 @@ interface IResponse {
 class CreateRecipeUseCase {
   constructor(
     @inject("RecipesRepository")
-    private recipesRepository: IRecipesRepository,
-  ) { }
+    private recipesRepository: IRecipesRepository
+  ) {}
   async execute({
     user_id,
     title,
@@ -31,7 +31,7 @@ class CreateRecipeUseCase {
     cooking_hours,
     files,
     video,
-    categories
+    categories,
   }: ICreateRecipeDTO): Promise<IResponse> {
     const recipe = await this.recipesRepository.save({
       user_id,
@@ -44,7 +44,7 @@ class CreateRecipeUseCase {
       cooking_hours,
       files,
       video,
-      categories
+      categories,
     });
 
     return recipe;
